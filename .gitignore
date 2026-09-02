@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.pytest_cache/
+*.log
+logs/*.log
+
+# Node & Frontend
+node_modules/
+dist/
+.vite/
+
+# Database & Local Secrets
+# Keep sample database or uncomment if private
+# resortvision.db
+
+# OS
+.DS_Store
+Thumbs.db

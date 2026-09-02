@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: resortvision-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: resortvision
+      POSTGRES_USER: resort_user
+      POSTGRES_PASSWORD: resort_secure_password_2026
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U resort_user -d resortvision"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: resortvision-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: resortvision-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      - DATABASE_URL=postgresql://resort_user:resort_secure_password_2026@postgres:5432/resortvision
+      - SECRET_KEY=resortvision-ai-super-secret-key-change-in-production-2026
+      - DEVICE=auto
+      - AI_FRAME_RATE=10
+      - DEMO_MODE=True
+      - W_FACE=0.40
+      - W_REID=0.35
+      - W_TEMPORAL=0.15
+      - W_CAMERA=0.10
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: resortvision-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  postgres_data:
+  redis_data:
